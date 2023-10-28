@@ -1,30 +1,30 @@
 const express = require("express")
+// const bcrypt=require("bcryptjs")
 const path = require("path")
 const app = express()
-// const hbs = require("hbs")
+ const hbs = require("hbs")
 const LogInCollection = require("./mongo")
 const port = process.env.PORT || 3000
-app.use(express.json())
-
-app.use(express.urlencoded({ extended: false }))
 
 const tempelatePath = path.join(__dirname, '../tempelates')
 const publicPath = path.join(__dirname, '../public')
-console.log(publicPath);
+// console.log(publicPath);
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }))
 
 app.set('view engine', 'hbs')
 app.set('views', tempelatePath)
 app.use(express.static(publicPath))
 
 
-// hbs.registerPartials(partialPath)
+//  hbs.registerPartials(partialPath)
 
 
-app.get('/signup', (req, res) => {
-    res.render('signup')
+app.get("/signup", (req, res) => {
+    res.render("signup")
 })
-app.get('/', (req, res) => {
-    res.render('login')
+app.get("/", (req, res) => {
+    res.render("login")
 })
 
 
@@ -33,37 +33,63 @@ app.get('/', (req, res) => {
 //     res.render('home')
 // })
 
-app.post('/signup', async (req, res) => {
+app.post("/signup", async (req, res) => {
     
-    // const data = new LogInCollection({
-    //     name: req.body.name,
-    //     password: req.body.password
-    // })
-    // await data.save()
-
-    const data = {
-        name: req.body.name,
-        password: req.body.password
-    }
-
-    const checking = await LogInCollection.findOne({ name: req.body.name })
-
+    
    try{
-    if (checking.name === req.body.name && checking.password===req.body.password) {
+    const password=req.body.password;
+    const name=req.body.name;
+    const registerstudent= new LogInCollection({
+         name:req.body.name,
+         password:req.body.password
+    })
+   
+
+   
+     const checking = await LogInCollection.findOne({ name: req.body.name });
+    // const pass=await LogInCollection.findOne({ password: req.body.password});
+     if (checking) {
         res.send("user details already exists")
-    }
+     }
     else{
-        await LogInCollection.insertMany([data])
+        // const registered=await data.save();
+        
+        const registered=await registerstudent.save();
+        // res.status(201).render("home");
+        res.status(201).render("home", {
+            naming: req.body.name
+        })
     }
+    
    }
-   catch{
-    res.send("wrong inputs")
+   catch(error){ 
+    res.status(400).send(error);
    }
 
-    res.status(201).render("home", {
-        naming: req.body.name
-    })
-})
+
+
+// try{
+//     const password=req.body.password;
+//     const name=req.body.name;
+//     const registerstudent= new LogInCollection({
+//          name:req.body.name,
+//          password:req.body.password
+//     })
+//     const registered=await registerstudent.save();
+//     res.status(201).render("home");
+// }catch(error){
+//     res.status(400).send(error);
+// }
+
+// try{
+//     console.log(req.body.name);
+//     res.send(req.body.name);
+// }
+// catch(error){
+//     res.status(400).send(error);
+// }
+   
+}) 
 
 
 app.post('/login', async (req, res) => {
@@ -94,6 +120,23 @@ app.post('/login', async (req, res) => {
 
 
 
-app.listen(port, () => {
+
+// ussage of bcrypt;
+
+// const securePassword=async (password)=>{
+//     const passwordHash=await bcrypt.hash(password,10);
+//     const passwordmatch=await bcrypt.compare(password,passwordHash);
+//     console.log(passwordHash);
+//     // give true value
+//     console.log(passwordmatch);  
+
+// }
+// securePassword("1234");
+// you cant convert the hashing password orginal data
+// compare fun true or false 
+
+app.listen(3000, (
+
+) => {
     console.log('port connected');
 })
