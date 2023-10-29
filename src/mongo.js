@@ -31,9 +31,10 @@ const logInSchema=new mongoose.Schema({
 logInSchema.methods.generateAuthToken=async function(){
     try {
         
-        const token=jwt.sign({_id:this._id.toString()},"mynameisanchalmishralookingforjob");
+        const token=jwt.sign({_id:this._id.toString()},process.env.SECRET_KEY);
+        // console.log(token);
         this.tokens=this.tokens.concat({token:token})
-       await this.save();
+        await this.save();
         return token;
     } catch (error) {
         res.send("the error part"+error);
@@ -47,13 +48,14 @@ logInSchema.methods.generateAuthToken=async function(){
 
 // before save your password we need to hash or run a middleware pre
 logInSchema.pre("save", async function(next){
-    if(this.isModified("password")){
-         console.log(`the current password is ${this.password}`);
-        this.password=await bcrypt.hash(this.password,10);
-       console.log(`the current password is ${this.password}`);
-        // next means after running middleware next function run if you are not called hash it will loading again and again
+     if(this.isModified("password")){
+    //  console.log(`the current password is ${this.password}`);
+    this.password=await bcrypt.hash(this.password,10);
+    //  console.log(`the current password is ${this.password}`);
+     // next means after running middleware next function run if you are not called hash it will loading again and again
 
-    }
+     }
+    // console.log(`the current pswd ${this.password}`);
     next();
 })
 

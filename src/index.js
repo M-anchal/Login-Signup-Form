@@ -1,9 +1,11 @@
-const express = require("express")
-// const bcrypt=require("bcryptjs")
-const path = require("path")
-const app = express()
- const hbs = require("hbs")
-const LogInCollection = require("./mongo")
+require('dotenv').config();
+const express = require("express");
+const app = express();
+const bcrypt=require("bcryptjs");
+const path = require("path");
+// const app = express()
+ const hbs = require("hbs");
+const LogInCollection = require("./mongo");
 const port = process.env.PORT || 3000
 
 const tempelatePath = path.join(__dirname, '../tempelates')
@@ -19,7 +21,7 @@ app.use(express.static(publicPath))
 
 //  hbs.registerPartials(partialPath)
 
-
+console.log(process.env.SECRET_KEY);
 app.get("/signup", (req, res) => {
     res.render("signup")
 })
@@ -52,9 +54,10 @@ app.post("/signup", async (req, res) => {
         res.send("user details already exists")
      }
     else{
-        // const registered=await data.save();
-        
-        const registered=await registerstudent.save();
+         
+         const token= await registerstudent.generateAuthToken();
+
+         const registered=await registerstudent.save();
         // res.status(201).render("home");
         res.status(201).render("home", {
             naming: req.body.name
@@ -66,7 +69,7 @@ app.post("/signup", async (req, res) => {
     res.status(400).send(error);
    }
 
-
+})
 
 // try{
 //     const password=req.body.password;
@@ -88,16 +91,21 @@ app.post("/signup", async (req, res) => {
 // catch(error){
 //     res.status(400).send(error);
 // }
-   
-}) 
+
 
 
 app.post('/login', async (req, res) => {
 
     try {
+        const password=req.body.password;
         const check = await LogInCollection.findOne({ name: req.body.name })
-
-        if (check.password === req.body.password) {
+        // console.log(check.password);
+        // console.log(password);
+        const isMatch= await bcrypt.compare(password,check.password);
+        const token= await check.generateAuthToken();
+        console.log("login token part"+token);
+        // console.log(isMatch);
+        if (isMatch) {
             res.status(201).render("home", { naming: `${req.body.password}+${req.body.name}` })
         }
 
